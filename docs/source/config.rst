@@ -294,5 +294,17 @@ Per questo motivo si possono creare inventory dinamici, ovvero file eseguibili s
 
 Quando Ansible trova un file eseguibile nel path degli inventari lo esegue e utilizza l'inventario generato dinamicamente. Sotto `<https://github.com/ansible/ansible/tree/devel/contrib/inventory>`_ sono già presenti numerosi template per inventory dinamici che supportano numerose piattaforme cloud come OpenStack, Amazon AWS, Rackspace, piattaforme di virtualizzazione on premise come oVirt/RHEV, PaaS OpenShift, Satellite, providers esterni come Digital Ocean o Linode.
 
+Se si scrive un inventory dinamico occorre tenere a mente che questo dovrà supportare almeno due opzioni:
+
+* `--list` per produrre un output JSON in formato dizionario con gruppi e relativi host
+* `--host <hostname>` per produrre un output JSON in formato dizionario delle variabili associato all'host specificato
+
+E' possibile avere in una stessa directory file inventory statici e dinamici e puntare, nel file `ansible.cfg` non ad un singolo file ma a tutta la directory. Ansible in questo caso processerà tutti i file al suo interno.
+::
+
+  [defaults]
+  inventory = /home/ansiblelab/inv_dir
+
+.. warning:: Quando si lavora con più inventory statici e dinamici in parallelo è necessario prestare attenzione ai nomi dei file. Ansible processa i file in ordine alfanumerico e pertanto possono verificarsi errori se un inventory dinamico viene processato dopo di un file inventory statico che contiene richiami a gruppi definiti dinamicamente.
 
 

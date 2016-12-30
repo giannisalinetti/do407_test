@@ -3,6 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. image:: logo_extraordy.png
+   :width: 240px
+
 DO407 - Automation With Ansible
 =================================
 
@@ -13,7 +16,7 @@ DO407 - Automation With Ansible
    intro
    install
    config
-
+   playbook
 
 Indices and tables
 ==================
