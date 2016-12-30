@@ -7,8 +7,8 @@ Panoramica sulla sintassi YAML
 Concetti base
 *************
 
-Verifica
-********
+Tool di verifica
+****************
 
 Uso di moduli nei playbook
 ##########################
