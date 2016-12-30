@@ -1,0 +1,230 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="it">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Ansible Installation &#8212; do407 0.1.1 documentazione</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="index" title="Indice" href="genindex.html" />
+    <link rel="search" title="Cerca" href="search.html" />
+    <link rel="prev" title="DO407: Automation with Ansible" href="intro.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="ansible-installation">
+<h1>Ansible Installation<a class="headerlink" href="#ansible-installation" title="Link a questa intestazione">¶</a></h1>
+<div class="section" id="prerequisiti">
+<h2>Prerequisiti<a class="headerlink" href="#prerequisiti" title="Link a questa intestazione">¶</a></h2>
+<p>L&#8217;unico prerequisito necessario per installare Ansible è Python 2.6 o 2.7. Per installare su RHEL/CentOS:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">yum</span> <span class="n">install</span> <span class="n">python</span>
+</pre></div>
+</div>
+<p>Python 2.7 è già installato di default su RHEL in quanto utilizzato da molti programmi.</p>
+<p>Come detto non esistono agent in Ansible da installare sugli host ma è necessario che sia presente Python 2.4 o superiore. Se la versione installata è inferiore a 2.5 è necessario installare anche il pacchetto <cite>python-simplejson</cite>.</p>
+</div>
+<div class="section" id="chiavi-ssh">
+<h2>Chiavi SSH<a class="headerlink" href="#chiavi-ssh" title="Link a questa intestazione">¶</a></h2>
+<p>E&#8217; possibile, ma non consigliabile, mantenere tutte le connessioni ssh con password. Se invece si ha la necessità di gestire grossi parchi di host è consigliabile usare chiavi ssh precedentemente create copiando la chiave pubblica sull&#8217;account dell&#8217;host remoto che verrà utilizzato per connettersi.</p>
+<p>Per creara coppie di chiavi ssh usare l&#8217;utility</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ssh</span><span class="o">-</span><span class="n">keygen</span>
+</pre></div>
+</div>
+<p>Senza parametri aggiuntivi il comando copierà le chiavi in <cite>~/.ssh/id_rsa</cite> e <cite>~/.ssh/id_rsa.pub</cite>. E&#8217; possibile specificare destinazioni e nomi di file diversi.
+Una volta creata la coppia di chiavi ssh con l&#8217;utility <cite>ssh-copy-id</cite> si possono deployare le chiavi sugli host remoti:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ssh</span><span class="o">-</span><span class="n">copy</span><span class="o">-</span><span class="nb">id</span> <span class="n">devops</span><span class="nd">@host1</span>
+</pre></div>
+</div>
+<p>Il comando copia la chiave pubblica <cite>~/.ssh/id_rsa.pub</cite> nel file <cite>~/.ssh/authorized_hosts</cite> dell&#8217;account <strong>devops</strong> su <strong>host1</strong>. Anche in questo caso è possibile specificare chiavi diverse:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ssh</span><span class="o">-</span><span class="n">copy</span><span class="o">-</span><span class="nb">id</span> <span class="o">-</span><span class="n">i</span> <span class="o">~/.</span><span class="n">ssh</span><span class="o">/</span><span class="n">custom_rsa</span><span class="o">.</span><span class="n">pub</span> <span class="n">devops</span><span class="nd">@host1</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="installazione">
+<h2>Installazione<a class="headerlink" href="#installazione" title="Link a questa intestazione">¶</a></h2>
+<p>Installazione di ansible tramite yum (RHEL/CentOS):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">yum</span> <span class="n">install</span> <span class="n">ansible</span>
+</pre></div>
+</div>
+<p>Installazione su Fedora 23/24/25:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">dnf</span> <span class="n">install</span> <span class="n">ansible</span>
+</pre></div>
+</div>
+<p>Installazione tramite pip:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">easy_install</span> <span class="n">pip</span>
+<span class="n">sudo</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">ansible</span>
+</pre></div>
+</div>
+<p>Installazione su Debian:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">ansible</span>
+</pre></div>
+</div>
+<p>Installazione su FreeBSD tramite pkg:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pkg</span> <span class="n">install</span> <span class="n">ansible</span>
+</pre></div>
+</div>
+<p>Installazione su FreeBSD tramite ports:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">ports</span><span class="o">/</span><span class="n">sysutils</span><span class="o">/</span><span class="n">ansible</span>
+<span class="n">make</span> <span class="n">install</span> <span class="n">clean</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="post-installazione">
+<h2>Post Installazione<a class="headerlink" href="#post-installazione" title="Link a questa intestazione">¶</a></h2>
+<p>Una volta completata l&#8217;installazione il primo comando che si può eseguire è un semplice dump della versione:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="o">--</span><span class="n">version</span>
+</pre></div>
+</div>
+<p>Il comando produce un output simile al seguent:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="mf">2.2</span><span class="o">.</span><span class="mf">0.0</span>
+  <span class="n">config</span> <span class="n">file</span> <span class="o">=</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">ansible</span><span class="o">/</span><span class="n">ansible</span><span class="o">.</span><span class="n">cfg</span>
+  <span class="n">configured</span> <span class="n">module</span> <span class="n">search</span> <span class="n">path</span> <span class="o">=</span> <span class="n">Default</span> <span class="n">w</span><span class="o">/</span><span class="n">o</span> <span class="n">overrides</span>
+</pre></div>
+</div>
+<p>Oltre alla versione del software (2.2.0.0) viene anche indicato il file di configurazione utilizzato (<cite>/etc/ansible/ansible.cfg</cite>).</p>
+</div>
+<div class="section" id="listare-gli-host-dell-inventory">
+<h2>Listare gli host dell&#8217;inventory<a class="headerlink" href="#listare-gli-host-dell-inventory" title="Link a questa intestazione">¶</a></h2>
+<p>L&#8217;opzione <cite>&#8211;list-hosts</cite> permette di stampare un elenco, completo o parziale di host e gruppi definiti nell&#8217;inventory.</p>
+<p>Il comando seguente mostra tutti gli host definiti nell&#8217;inventory utilizzando il pattern <cite>all</cite>.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="nb">all</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">inventory</span> <span class="o">--</span><span class="nb">list</span><span class="o">-</span><span class="n">hosts</span>
+</pre></div>
+</div>
+<p>E&#8217; possibile restringere la ricerca ad un solo gruppo definito, ad esempio dbservers:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="n">dbservers</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">inventory</span> <span class="o">--</span><span class="nb">list</span><span class="o">-</span><span class="n">hosts</span>
+</pre></div>
+</div>
+<p>O ad un singolo host, definito per nome:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="n">node1</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">inventory</span> <span class="o">--</span><span class="nb">list</span><span class="o">-</span><span class="n">hosts</span>
+</pre></div>
+</div>
+<p>O per indirizzo IP:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="mf">10.1</span><span class="o">.</span><span class="mf">12.10</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">inventory</span> <span class="o">--</span><span class="nb">list</span><span class="o">-</span><span class="n">hosts</span>
+</pre></div>
+</div>
+<p>Si possono pasare liste di due o più items separati da virgola:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="n">node1</span><span class="p">,</span><span class="n">node2</span><span class="p">,</span><span class="n">node3</span><span class="o">.</span><span class="n">node4</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">inventory</span> <span class="o">--</span><span class="nb">list</span><span class="o">-</span><span class="n">hosts</span>
+</pre></div>
+</div>
+<p>Oppure usare dei wildcard:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="s1">&#39;*&#39;</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">inventory</span> <span class="o">--</span><span class="nb">list</span><span class="o">-</span><span class="n">hosts</span>
+<span class="n">ansible</span> <span class="s1">&#39;*.example.com&#39;</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">inventory</span> <span class="o">--</span><span class="nb">list</span><span class="o">-</span><span class="n">hosts</span>
+<span class="n">ansible</span> <span class="s1">&#39;192.168.122.*&#39;</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">inventory</span> <span class="o">--</span><span class="nb">list</span><span class="o">-</span><span class="n">hosts</span>
+</pre></div>
+</div>
+<p>Pattern avanzati includono condizioni di tipo OR (host che appartengono al gruppo dbservers o al gruppo mailservers):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="n">dbservers</span><span class="p">:</span><span class="n">mailservers</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">inventory</span> <span class="o">--</span><span class="nb">list</span><span class="o">-</span><span class="n">hosts</span>
+</pre></div>
+</div>
+<p>Condizioni di tipo AND (host che appartengono sia al gruppo dbservers sia al gruppo mailservers) :</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="s1">&#39;dbservers:&amp;mailservers&#39;</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">inventory</span> <span class="o">--</span><span class="nb">list</span><span class="o">-</span><span class="n">hosts</span>
+</pre></div>
+</div>
+<p>Negazioni che permettono di escludere singoli host o gruppi:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="s1">&#39;dbservers:!node1&#39;</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">inventory</span> <span class="o">--</span><span class="nb">list</span><span class="o">-</span><span class="n">hosts</span>
+<span class="n">ansible</span> <span class="s1">&#39;all:!dbservers&#39;</span> <span class="o">-</span><span class="n">i</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">inventory</span> <span class="o">--</span><span class="nb">list</span><span class="o">-</span><span class="n">hosts</span>
+</pre></div>
+</div>
+<p>Il primo esempio produce l&#8217;elenco degli host nel gruppo dbservers ad eccezione di node1, il secondo esempio produce l&#8217;elenco di tutti gli host ad eccezione di quelli appartenenti al gruppo dbservers.</p>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">Per evitare che la shell interpreti i caratteri speciali <cite>!</cite>, <cite>&amp;</cite> e <cite>*</cite> prima di ansible è necessario proteggerli all&#8217;interno di singoli apici o usando escape characters.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Tabella dei contenuti</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Ansible Installation</a><ul>
+<li><a class="reference internal" href="#prerequisiti">Prerequisiti</a></li>
+<li><a class="reference internal" href="#chiavi-ssh">Chiavi SSH</a></li>
+<li><a class="reference internal" href="#installazione">Installazione</a></li>
+<li><a class="reference internal" href="#post-installazione">Post Installazione</a></li>
+<li><a class="reference internal" href="#listare-gli-host-dell-inventory">Listare gli host dell&#8217;inventory</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="intro.html" title="capitolo precedente">DO407: Automation with Ansible</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>Questa pagina</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/install.rst.txt"
+            rel="nofollow">Mostra sorgente</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Ricerca veloce</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Vai" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Gianni Salinetti.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/install.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

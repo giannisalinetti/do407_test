@@ -1,0 +1,368 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="it">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Configurazione e comandi ad-hoc &#8212; do407 0.1.1 documentazione</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="index" title="Indice" href="genindex.html" />
+    <link rel="search" title="Cerca" href="search.html" />
+    <link rel="prev" title="Ansible Installation" href="install.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="configurazione-e-comandi-ad-hoc">
+<h1>Configurazione e comandi ad-hoc<a class="headerlink" href="#configurazione-e-comandi-ad-hoc" title="Link a questa intestazione">¶</a></h1>
+<div class="section" id="il-file-ansible-cfg">
+<h2>Il file ansible.cfg<a class="headerlink" href="#il-file-ansible-cfg" title="Link a questa intestazione">¶</a></h2>
+<p>La configurazione di Ansible viene gestita, di default, nel file <cite>/etc/ansible/ansible.cfg</cite>. In questo file, in formato INI, esistono diverse sezioni:</p>
+<ul class="simple">
+<li><strong>[defaults]</strong></li>
+<li><strong>[privilege_escalation]</strong></li>
+<li><strong>[paramiko_connection]</strong></li>
+<li><strong>[ssh_connection]</strong></li>
+<li><strong>[accelerate]</strong></li>
+<li><strong>[selinux]</strong></li>
+<li><strong>[colors]</strong></li>
+</ul>
+<p>La sezione <strong>[defaults]</strong> definisce impostazioni di base come il default path dell&#8217;inventory (<cite>/etc/ansible/inventory</cite>), il path per le librerie di moduli custom, l&#8217;utente remoto che si connetterà agli host (<cite>remote_user</cite>) e l&#8217;utente verso cui verrà fatta la privilege escalation (<cite>become_user</cite>), ovvero chi si diventerà con un sudo.</p>
+<p>La sezione <strong>[privilege_escalation]</strong> definisce le modalità di elevazione dei privilegi dell&#8217;utente che si connette agli host. Contiene solo quattro, ma fondamentali parametri i cui valori di default sono:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">become</span><span class="o">=</span><span class="kc">True</span>
+<span class="n">become_method</span><span class="o">=</span><span class="n">sudo</span>
+<span class="n">become_user</span><span class="o">=</span><span class="n">root</span>
+<span class="n">become_ask_pass</span><span class="o">=</span><span class="kc">False</span>
+</pre></div>
+</div>
+<p>Le sezioni <strong>[ssh_connection]</strong> e <strong>[paramiko_connection]</strong> permettono di definire i parametri di connessione OpenSSH e Paramiko.</p>
+<p>Questo significa che quando Ansible si connette ad un host per elvare i privilegi usa <strong>sudo</strong> per diventare <strong>root</strong>. Di default si aspetta di non dover passare alcuna password. Queste impostazioni possono essere sempre alterate a livello di playbook.</p>
+<p>Notare che le impostazioni nel file sono quasi tutti commentate in quanto già impostate di default nel codice. Una menzione particolare alla property <strong>forks</strong> il cui valore di default è <strong>5</strong>. Questo significa che Ansible non effettuerà, di default, più di 5 fork contemporaneamente, e quindi non più di 5 connessioni in parallelo. Il tuning dei fork è molto importante per non sovraccaricare eccessivamente il controller e può essere anche gestito a livello del signolo playbook con la direttiva <strong>serial</strong>.</p>
+<p>Una delle caratteristiche più interessanti di Ansible è la possibilità di fare override del file ansible.cfg creando altri file omonimi nella directory dei playbook, nella home dell&#8217;utente o puntando al contentuto espresso da una variabile d&#8217;ambiente. In generale si possono elencare quattro possibili distribuzioni del file <cite>ansible.cfg</cite>.</p>
+<ul>
+<li><p class="first">Nella directory di configurazione di sistema (default):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">ansible</span><span class="o">/</span><span class="n">ansible</span><span class="o">.</span><span class="n">cfg</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Nella directory del progetto (<strong>best practice</strong>). Se esiste un file <cite>ansible.cfg</cite> in questo path verrà utilizzato quest&#8217;ultimo.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">ansiblelab</span><span class="o">/</span><span class="n">myproject</span><span class="o">/</span><span class="n">ansible</span><span class="o">.</span><span class="n">cfg</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Nella home dell&#8217;utente. Se il file <cite>ansible.cfg</cite> è definito nella home dell&#8217;utente verrà utilizzato per tutti i playbook che non hanno un loro file nella working directory. Se invece esiste quest&#8217;ultimo avrà sempre e comunque la priorità.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">ansiblelab</span><span class="o">/</span><span class="n">ansible</span><span class="o">.</span><span class="n">cfg</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Come variabile d&#8217;ambiente <cite>ANSIBLE_CONFIG</cite>. Questo approccio permette di bypassare le tre modalità sopra descritte acquistando precedenza su tutte.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">ANSIBLE_CONFIG</span><span class="o">=/</span><span class="n">opt</span><span class="o">/</span><span class="n">test</span><span class="o">/</span><span class="n">ansible</span><span class="o">.</span><span class="n">cfg</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>In qualsiasi momento, per testare quale file di configurazione si sta usando, si può usare il comando</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="o">--</span><span class="n">version</span>
+</pre></div>
+</div>
+<p>L&#8217;output mostra il file <cite>ansible.cfg</cite> attualmente in uso:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="mf">2.2</span><span class="o">.</span><span class="mf">0.0</span>
+  <span class="n">config</span> <span class="n">file</span> <span class="o">=</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">ansible</span><span class="o">/</span><span class="n">ansible</span><span class="o">.</span><span class="n">cfg</span>
+  <span class="n">configured</span> <span class="n">module</span> <span class="n">search</span> <span class="n">path</span> <span class="o">=</span> <span class="n">Default</span> <span class="n">w</span><span class="o">/</span><span class="n">o</span> <span class="n">overrides</span>
+</pre></div>
+</div>
+<p>Si può ottenere questa informazione durante l&#8217;esecuzione di comandi appendendo l&#8217;opzione -v (verbose):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="nb">all</span> <span class="o">--</span><span class="nb">list</span><span class="o">-</span><span class="n">hosts</span> <span class="o">-</span><span class="n">v</span>
+</pre></div>
+</div>
+<p>L&#8217;output mostra in testa quale file <cite>ansible.cfg</cite> si sta utilizzando:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Using</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">ansible</span><span class="o">/</span><span class="n">ansible</span><span class="o">.</span><span class="n">cfg</span> <span class="k">as</span> <span class="n">config</span> <span class="n">file</span>
+  <span class="n">hosts</span> <span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+    <span class="n">localhost</span>
+    <span class="n">yoda</span><span class="o">.</span><span class="n">traininglab</span><span class="o">.</span><span class="n">com</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Nota</p>
+<p class="last">L&#8217;override di un file di configurazione non si limita ad alterare le proprietà diversamente definite. Ansible userò solo e soltanto le impostazioni contenute al suo interno. Pertanto, se si ha bisogno di utilizzare anche delle impostazioni definite a livello più generale nel file <cite>/etc/ansible/ansible.cfg</cite> sarà necessario replicarle nel file di configurazione che si intende utilizzare.</p>
+</div>
+<div class="section" id="creazione-di-una-working-directory">
+<h3>Creazione di una working directory<a class="headerlink" href="#creazione-di-una-working-directory" title="Link a questa intestazione">¶</a></h3>
+<p>L&#8217;esempio seguente mostra la creazione di una working directory con file <cite>ansible.cfg</cite> e <cite>inventory</cite> indipendenti.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">ansiblelab</span><span class="o">/</span><span class="n">firstproject</span>
+
+<span class="n">cat</span> <span class="o">&gt;</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">ansiblelab</span><span class="o">/</span><span class="n">firstpriect</span><span class="o">/</span><span class="n">ansible</span><span class="o">.</span><span class="n">cfg</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span>
+<span class="n">inventory</span> <span class="o">=</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">ansiblelab</span><span class="o">/</span><span class="n">firstproject</span><span class="o">/</span><span class="n">inventory</span>
+<span class="n">EOF</span>
+
+<span class="n">cat</span> <span class="o">&gt;</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">ansiblelab</span><span class="o">/</span><span class="n">firstproject</span><span class="o">/</span><span class="n">inventory</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span>
+<span class="n">localhost</span>
+
+<span class="p">[</span><span class="n">dev</span><span class="p">]</span>
+<span class="n">node1</span>
+<span class="n">node2</span>
+
+<span class="p">[</span><span class="n">prod</span><span class="p">]</span>
+<span class="n">node3</span>
+<span class="n">node4</span>
+<span class="n">EOF</span>
+</pre></div>
+</div>
+<p>Si è creato un file <cite>ansible.cfg</cite> minimale con un solo parametro custom (per il resto varranno le impostazioni di default scolpite nel codice) che definisce il path di un file inventory. Il file inventory, a sua volta, è stato popolato con due gruppi, <strong>dev</strong> e <strong>prod</strong> e da localhost, ovvero il control node stesso.</p>
+<p>Da questo momento in poi all&#8217;interno di <cite>/home/ansiblelab/firstproject</cite> si potranno eseguire <strong>comandi ad-hoc</strong> e <strong>playbook</strong> che impatteranno sugli host definiti nell&#8217;inventory.</p>
+</div>
+</div>
+<div class="section" id="comandi-ad-hoc">
+<h2>Comandi ad-hoc<a class="headerlink" href="#comandi-ad-hoc" title="Link a questa intestazione">¶</a></h2>
+<div class="section" id="moduli">
+<h3>Moduli<a class="headerlink" href="#moduli" title="Link a questa intestazione">¶</a></h3>
+<p>Ansible utilizza, per l&#8217;esecuzione dei comandi, una serie di <strong>moduli</strong>. Un modulo è un file Python che contiene classi o funzioni per svolgere determinate operazioni.
+I moduli installati da pacchetto vengono copiati in RHEL/CentOS sotto <cite>/usr/lib/python2.7/site-packages/ansible/modules</cite>. In questa directory sono raggruppati per moduli <strong>core</strong> e per <strong>extras</strong>. Essendo codice Python è possibile leggerli e studiarli direttamente sulla macchina oppure clonare i repository GitHub:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/ansible/ansible-modules-core.git">https://github.com/ansible/ansible-modules-core.git</a></li>
+<li><a class="reference external" href="https://github.com/ansible/ansible-modules-extras.git">https://github.com/ansible/ansible-modules-extras.git</a></li>
+</ul>
+<p>All&#8217;inteno i moduli core e extras contengono a loro volta sottodirectory che raggruppano i vari moduli per tipologia di funzione.</p>
+<p>Ad esempio, sotto <cite>core/commands</cite> si possono trovare i moduli <cite>command.py</cite> e <cite>shell.py</cite> per l&#8217;esecuzione di comandi remoti. Il primo permette di eseguire comandi utilizzando un interprete minimale mentre il secondo permette di eseguire comandi utilizzando un interprete bash. Il modulo <strong>shell</strong> è fondamentale quando si devono utlizzare dei bash builtin, eseguire
+comandi in pipe, redirect, ecc.</p>
+<p>In <cite>core/packaging/os</cite> si trovano invece moduli per gestire pacchetti sui vari sistemi come <strong>yum</strong> o <strong>apt</strong> mentre in <cite>core/packaging/language</cite> vi sono moduli specifici di linguaggi come Python (<strong>pip</strong>, <strong>easy_install</strong>) e Ruby (<strong>gem</strong>).</p>
+<p>In <cite>core/system</cite> si trovano moduli per l&#8217;amministrazione di sistema come <strong>service</strong> per gestire l&#8217;esecuzione di servizi, <strong>selinux</strong>, <strong>sysctl</strong>, <strong>systemd</strong>, <strong>mount</strong>, ecc.</p>
+<p>Non è necessario navigare all&#8217;interno delle directory di installazione dei moduli per utilizzarli. Per sfogliare l&#8217;elenco completo si utilizza il comando</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span><span class="o">-</span><span class="n">doc</span> <span class="o">-</span><span class="n">l</span>
+</pre></div>
+</div>
+<p>Questo produce un output pulito e paginato in less con l&#8217;elenco dei moduli disponibili (ovvero installati). Per leggere la documentazione di un singolo modulo (che è in realtà scritta nel file .py del modulo stesso) si esegua</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span><span class="o">-</span><span class="n">doc</span> <span class="o">&lt;</span><span class="n">module_name</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>La documentazione varia da modulo a modulo e può essere più o meno estesa. Per mostrare un output minimale (snippet) contente solo gli esempi di applicazione presenti in fondo alle pagine di documentazione si esegua</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span><span class="o">-</span><span class="n">doc</span> <span class="o">-</span><span class="n">s</span> <span class="o">&lt;</span><span class="n">module_name</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="esecuzione-di-comandi">
+<h3>Esecuzione di comandi<a class="headerlink" href="#esecuzione-di-comandi" title="Link a questa intestazione">¶</a></h3>
+<p>Per eseguire comandi in Ansible si usa la seguente sintassi:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="o">&lt;</span><span class="n">target</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">m</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">-</span><span class="n">a</span> <span class="o">&lt;</span><span class="n">module_arguments</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">i</span> <span class="n">inventory</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Un primo esempio molto semplice è l&#8217;uso del modulo <strong>ping</strong>, che serve semplicamente a verificare se un host è attivo. Utilizzando l&#8217;inventory dell&#8217;esempio precedente, si va a eseguire il comando sul gruppo <strong>prod</strong>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="n">prod</span> <span class="o">-</span><span class="n">m</span> <span class="n">ping</span>
+</pre></div>
+</div>
+<p>Si otterrà il seguente output:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">node3</span> <span class="o">|</span> <span class="n">SUCCESS</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="s2">&quot;changed&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;ping&quot;</span><span class="p">:</span> <span class="s2">&quot;pong&quot;</span>
+<span class="p">}</span>
+
+<span class="n">node4</span> <span class="o">|</span> <span class="n">SUCCESS</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="s2">&quot;changed&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;ping&quot;</span><span class="p">:</span> <span class="s2">&quot;pong&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Come si può notare, l&#8217;output dei comandi ad-hoc Ansible è in formato JSON.</p>
+<p>Per eseguire un comando sugli host, si può usare il modulo <strong>command</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="nb">all</span> <span class="o">-</span><span class="n">m</span> <span class="n">command</span> <span class="o">-</span><span class="n">a</span> <span class="s1">&#39;id&#39;</span>
+</pre></div>
+</div>
+<p>Questo comando esegui su tutti (<strong>all</strong>) gli host definiti nell&#8217;inventory il comando specificato nell&#8217;argomento, ovvero <strong>id</strong>. L&#8217;output di questo comando può variare in base all&#8217;utente con cui ci si connette o alla privilege escalation.</p>
+<p>As esempio, se eseguito sul contoller stesso:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="n">localhost</span> <span class="o">-</span><span class="n">m</span> <span class="n">command</span> <span class="o">-</span><span class="n">a</span> <span class="s1">&#39;id&#39;</span> <span class="o">--</span><span class="n">connection</span><span class="o">=</span><span class="n">local</span>
+</pre></div>
+</div>
+<p>Produce il seguente output:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">localhost</span> <span class="o">|</span> <span class="n">SUCCESS</span> <span class="o">|</span> <span class="n">rc</span><span class="o">=</span><span class="mi">0</span> <span class="o">&gt;&gt;</span>
+<span class="n">uid</span><span class="o">=</span><span class="mi">1000</span><span class="p">(</span><span class="n">student</span><span class="p">)</span> <span class="n">gid</span><span class="o">=</span><span class="mi">1000</span><span class="p">(</span><span class="n">student</span><span class="p">)</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1000</span><span class="p">(</span><span class="n">student</span><span class="p">),</span><span class="mi">10</span><span class="p">(</span><span class="n">wheel</span><span class="p">)</span> <span class="n">context</span><span class="o">=</span><span class="n">unconfined_u</span><span class="p">:</span><span class="n">unconfined_r</span><span class="p">:</span><span class="n">unconfined_t</span><span class="p">:</span><span class="n">s0</span><span class="o">-</span><span class="n">s0</span><span class="p">:</span><span class="n">c0</span><span class="o">.</span><span class="n">c1023</span>
+</pre></div>
+</div>
+<p>L&#8217;opzione <cite>&#8211;connection=local</cite> in questo caso fa si che Ansible non cerchi di fare ssh su se stesso.</p>
+<p>Ci si può connettere agli host con uno specifico utente, magari uno che è abilitato a fare sudo senza password (<strong>best practice</strong>).</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="n">dev</span> <span class="o">-</span><span class="n">m</span> <span class="n">command</span> <span class="o">-</span><span class="n">a</span> <span class="s1">&#39;id&#39;</span> <span class="o">-</span><span class="n">u</span> <span class="n">devops</span>
+</pre></div>
+</div>
+<p>In questo caso ci si connette al gruppo <strong>dev</strong> con l&#8217;utente <strong>devops</strong>.
+Si otterrà un output simile al seguente:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">node1</span> <span class="o">|</span> <span class="n">SUCCESS</span> <span class="o">|</span> <span class="n">rc</span><span class="o">=</span><span class="mi">0</span> <span class="o">&gt;&gt;</span>
+<span class="n">uid</span><span class="o">=</span><span class="mi">1001</span><span class="p">(</span><span class="n">devops</span><span class="p">)</span> <span class="n">gid</span><span class="o">=</span><span class="mi">1001</span><span class="p">(</span><span class="n">devops</span><span class="p">)</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1001</span><span class="p">(</span><span class="n">devops</span><span class="p">),</span><span class="mi">10</span><span class="p">(</span><span class="n">wheel</span><span class="p">)</span> <span class="n">context</span><span class="o">=</span><span class="n">unconfined_u</span><span class="p">:</span><span class="n">unconfined_r</span><span class="p">:</span><span class="n">unconfined_t</span><span class="p">:</span><span class="n">s0</span><span class="o">-</span><span class="n">s0</span><span class="p">:</span><span class="n">c0</span><span class="o">.</span><span class="n">c1023</span>
+
+<span class="n">node2</span> <span class="o">|</span> <span class="n">SUCCESS</span> <span class="o">|</span> <span class="n">rc</span><span class="o">=</span><span class="mi">0</span> <span class="o">&gt;&gt;</span>
+<span class="n">uid</span><span class="o">=</span><span class="mi">1001</span><span class="p">(</span><span class="n">devops</span><span class="p">)</span> <span class="n">gid</span><span class="o">=</span><span class="mi">1001</span><span class="p">(</span><span class="n">devops</span><span class="p">)</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1001</span><span class="p">(</span><span class="n">devops</span><span class="p">),</span><span class="mi">10</span><span class="p">(</span><span class="n">wheel</span><span class="p">)</span> <span class="n">context</span><span class="o">=</span><span class="n">unconfined_u</span><span class="p">:</span><span class="n">unconfined_r</span><span class="p">:</span><span class="n">unconfined_t</span><span class="p">:</span><span class="n">s0</span><span class="o">-</span><span class="n">s0</span><span class="p">:</span><span class="n">c0</span><span class="o">.</span><span class="n">c1023</span>
+</pre></div>
+</div>
+<p>E&#8217; possibile definire in modo persistente l&#8217;utente remoto nel file <cite>ansible.cfg</cite> con la direttiva <strong>remote_user</strong> nella sezione [defaults]:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">defaults</span><span class="p">]</span>
+<span class="n">inventory</span> <span class="o">=</span> <span class="n">home</span><span class="o">/</span><span class="n">ansiblelab</span><span class="o">/</span><span class="n">firstproject</span><span class="o">/</span><span class="n">inventory</span>
+<span class="n">remote_user</span> <span class="o">=</span> <span class="n">devops</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="privilege-escalation">
+<h3>Privilege Escalation<a class="headerlink" href="#privilege-escalation" title="Link a questa intestazione">¶</a></h3>
+<p>Per eseguire un comando con privilegi elevati si aggiunge l&#8217;opzione <cite>-b|&#8211;become</cite></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="n">dev</span> <span class="o">-</span><span class="n">m</span> <span class="n">command</span> <span class="o">-</span><span class="n">a</span> <span class="s1">&#39;id&#39;</span> <span class="o">-</span><span class="n">u</span> <span class="n">devops</span> <span class="o">-</span><span class="n">b</span>
+</pre></div>
+</div>
+<p>In questo caso l&#8217;output sarà il seguente:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">node1</span> <span class="o">|</span> <span class="n">SUCCESS</span> <span class="o">|</span> <span class="n">rc</span><span class="o">=</span><span class="mi">0</span> <span class="o">&gt;&gt;</span>
+<span class="n">uid</span><span class="o">=</span><span class="mi">0</span><span class="p">(</span><span class="n">root</span><span class="p">)</span> <span class="n">gid</span><span class="o">=</span><span class="mi">0</span><span class="p">(</span><span class="n">root</span><span class="p">)</span> <span class="n">groups</span><span class="o">=</span><span class="mi">0</span><span class="p">(</span><span class="n">root</span><span class="p">)</span> <span class="n">context</span><span class="o">=</span><span class="n">unconfined_u</span><span class="p">:</span><span class="n">unconfined_r</span><span class="p">:</span><span class="n">unconfined_t</span><span class="p">:</span><span class="n">s0</span><span class="o">-</span><span class="n">s0</span><span class="p">:</span><span class="n">c0</span><span class="o">.</span><span class="n">c1023</span>
+
+<span class="n">node2</span> <span class="o">|</span> <span class="n">SUCCESS</span> <span class="o">|</span> <span class="n">rc</span><span class="o">=</span><span class="mi">0</span> <span class="o">&gt;&gt;</span>
+<span class="n">uid</span><span class="o">=</span><span class="mi">0</span><span class="p">(</span><span class="n">root</span><span class="p">)</span> <span class="n">gid</span><span class="o">=</span><span class="mi">0</span><span class="p">(</span><span class="n">root</span><span class="p">)</span> <span class="n">groups</span><span class="o">=</span><span class="mi">0</span><span class="p">(</span><span class="n">root</span><span class="p">)</span> <span class="n">context</span><span class="o">=</span><span class="n">unconfined_u</span><span class="p">:</span><span class="n">unconfined_r</span><span class="p">:</span><span class="n">unconfined_t</span><span class="p">:</span><span class="n">s0</span><span class="o">-</span><span class="n">s0</span><span class="p">:</span><span class="n">c0</span><span class="o">.</span><span class="n">c1023</span>
+</pre></div>
+</div>
+<p>L&#8217;output del comando <cite>id</cite> questa volta mostra l&#8217;utente <strong>root</strong>, a dimostrazione dell&#8217;azione dell&#8217;effettiva escalation dei privilegi. L&#8217;esempio in questione da per scontato che l&#8217;utente devops possa fare sudo senza password. In caso contrario è necessario fornire anche informazioni di autenticazione tramite l&#8217;opzione <cite>-K|&#8211;ask-become-pass</cite>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="n">dev</span> <span class="o">-</span><span class="n">m</span> <span class="n">command</span> <span class="o">-</span><span class="n">a</span> <span class="s1">&#39;id&#39;</span> <span class="o">-</span><span class="n">u</span> <span class="n">devops</span> <span class="o">-</span><span class="n">b</span> <span class="o">--</span><span class="n">ask</span><span class="o">-</span><span class="n">become</span><span class="o">-</span><span class="k">pass</span>
+</pre></div>
+</div>
+<p>In questo modo verrà richesta al prompt la password per la privelege esacalation.</p>
+<p>Per eseguire il comando come utente diverso da root si può usare l&#8217;opzione <cite>&#8211;become-user=&lt;utente&gt;</cite>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="n">dev</span> <span class="o">-</span><span class="n">m</span> <span class="n">command</span> <span class="o">-</span><span class="n">a</span> <span class="s1">&#39;id&#39;</span> <span class="o">-</span><span class="n">u</span> <span class="n">devops</span> <span class="o">-</span><span class="n">b</span> <span class="o">--</span><span class="n">become</span><span class="o">-</span><span class="n">user</span><span class="o">=</span><span class="n">jboss</span>
+</pre></div>
+</div>
+<p>Anche in questo caso le impostazioni di privilege escalation possono essere scolpite nel file <cite>ansible.cfg</cite>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">defaults</span><span class="p">]</span>
+<span class="n">inventory</span> <span class="o">=</span> <span class="n">home</span><span class="o">/</span><span class="n">ansiblelab</span><span class="o">/</span><span class="n">firstproject</span><span class="o">/</span><span class="n">inventory</span>
+<span class="n">remote_user</span> <span class="o">=</span> <span class="n">devops</span>
+
+<span class="p">[</span><span class="n">privilege_escalation</span><span class="p">]</span>
+<span class="n">become</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">become_method</span> <span class="o">=</span> <span class="n">sudo</span>
+<span class="n">become_user</span> <span class="o">=</span> <span class="n">root</span>
+<span class="n">become_ask_pass</span> <span class="o">=</span> <span class="kc">False</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="command-vs-shell">
+<h3>Command vs Shell<a class="headerlink" href="#command-vs-shell" title="Link a questa intestazione">¶</a></h3>
+<p>Quando è davvero necessario usare il modulo <strong>shell</strong> piuttosto che il modulo <strong>command</strong>? Ad esempio quando è necessario estrapolare delle variabili d&#8217;ambiente, oppure se si devono utlizzare pipe, redirect o shell builtins. Il comando seguente</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="n">prod</span> <span class="o">-</span><span class="n">m</span> <span class="n">command</span> <span class="o">-</span><span class="n">a</span> <span class="s1">&#39;set&#39;</span>
+</pre></div>
+</div>
+<p>Produce un errore in quanto il modulo command non istanzia nessuna shell. Per ottenere l&#8217;elenco delle variabili d&#8217;ambiente si usa quindi il modulo shell:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="n">prod</span> <span class="o">-</span><span class="n">m</span> <span class="n">shell</span> <span class="o">-</span><span class="n">a</span> <span class="s1">&#39;set&#39;</span>
+</pre></div>
+</div>
+<p>Quando è davvero necessario usare il modulo <strong>shell</strong> piuttosto che il modulo <strong>command</strong>? Ad esempio quando è necessario estrapolare delle variabili d&#8217;ambiente, oppure se si devono utlizzare pipe, redirect o shell builtins. Il comando seguente</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="n">prod</span> <span class="o">-</span><span class="n">m</span> <span class="n">command</span> <span class="o">-</span><span class="n">a</span> <span class="s1">&#39;set&#39;</span>
+</pre></div>
+</div>
+<p>Produce un errore in quanto il modulo command non istanzia nessuna shell. Per ottenere l&#8217;elenco delle variabili d&#8217;ambiente si usa quindi il modulo shell:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="n">prod</span> <span class="o">-</span><span class="n">m</span> <span class="n">shell</span> <span class="o">-</span><span class="n">a</span> <span class="s1">&#39;set&#39;</span>
+</pre></div>
+</div>
+<p>In alcuni casi può essere utile produrre l&#8217;output in formato singola linea, ad esempio per ulteriore processamento. In questo caso si può utilizzare l&#8217;opzione <cite>-o</cite>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ansible</span> <span class="n">prod</span> <span class="o">-</span><span class="n">m</span> <span class="n">shell</span> <span class="o">-</span><span class="n">a</span> <span class="s1">&#39;set&#39;</span> <span class="o">-</span><span class="n">o</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="inventory-dinamici">
+<h2>Inventory dinamici<a class="headerlink" href="#inventory-dinamici" title="Link a questa intestazione">¶</a></h2>
+<p>Spesso gli inventory statici sono sufficienti per contenti on premise con un parco macchine fisso nel tempo ma quando si lavora in contesti cloud, dove è necessario poter scalare orizzontalmente, come IaaS OpenStack o PaaS OpenShift è necessario poter generare degli inventory dinamicamente in base agli host (o container, o jail, ecc) presenti.
+Per questo motivo si possono creare inventory dinamici, ovvero file eseguibili scritti preferibilmente in Python (ma può essere usato qualsiasi altro linguaggio) che producano un output formattato in formato hash/mappa/dizionario.</p>
+<p>Quando Ansible trova un file eseguibile nel path degli inventari lo esegue e utilizza l&#8217;inventario generato dinamicamente. Sotto <a class="reference external" href="https://github.com/ansible/ansible/tree/devel/contrib/inventory">https://github.com/ansible/ansible/tree/devel/contrib/inventory</a> sono già presenti numerosi template per inventory dinamici che supportano numerose piattaforme cloud come OpenStack, Amazon AWS, Rackspace, piattaforme di virtualizzazione on premise come oVirt/RHEV, PaaS OpenShift, Satellite, providers esterni come Digital Ocean o Linode.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Tabella dei contenuti</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Configurazione e comandi ad-hoc</a><ul>
+<li><a class="reference internal" href="#il-file-ansible-cfg">Il file ansible.cfg</a><ul>
+<li><a class="reference internal" href="#creazione-di-una-working-directory">Creazione di una working directory</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#comandi-ad-hoc">Comandi ad-hoc</a><ul>
+<li><a class="reference internal" href="#moduli">Moduli</a></li>
+<li><a class="reference internal" href="#esecuzione-di-comandi">Esecuzione di comandi</a></li>
+<li><a class="reference internal" href="#privilege-escalation">Privilege Escalation</a></li>
+<li><a class="reference internal" href="#command-vs-shell">Command vs Shell</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#inventory-dinamici">Inventory dinamici</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="install.html" title="capitolo precedente">Ansible Installation</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>Questa pagina</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/config.rst.txt"
+            rel="nofollow">Mostra sorgente</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Ricerca veloce</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Vai" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Gianni Salinetti.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/config.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
