@@ -10,6 +10,7 @@ Uno degli aspetti più importanti è l'indentazione, in quanto YAML non utilizza
 Un file YAML conterrà dati di tipo intero, stringhe, liste e dizionari.
 
 Il concetto di dizionario è comune in tutti i linguaggi e assume diversi nomi: dizionario, mappa, array associativo, hash, ecc. L'elemento comune è sempre lo stesso: una lista, ordinata o non ordinata, di key=value.
+
 Concetti base
 *************
 
